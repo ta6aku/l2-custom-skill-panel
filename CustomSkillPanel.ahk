@@ -148,11 +148,11 @@ try {
 
 			case InStr(value, "etc_bSoE"):
 				ovlPath := "resources\Overlays\timer_10sec" ext
-				dur := 60000
+				dur := 10000
 
 			case InStr(value, "bRes"):
-				ovlPath := "resources\Overlays\timer_15sec." ext
-				dur := 90000
+				ovlPath := "resources\Overlays\timer_15sec" ext
+				dur := 15000
 
 			case value = "resources\default_icon.png":
 				ovlPath := "null"
