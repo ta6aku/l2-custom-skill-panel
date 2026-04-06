@@ -73,7 +73,7 @@ isSoundDisable := Number(IniRead(IniPath, "Options", "DisableSound"))
 GIF := Number(IniRead(IniPath, "Options", "GIF"))
 NoIntegr := Number(IniRead(IniPath, "Options", "NoSetParent"))
 
-(DEBUG_MODE) && LogDebug(Format("`nisSoundDisabled: {1}, isGIF: {2}, isAOT: {3}`n", isSoundDisable, GIF, NoIntegr))
+(DEBUG_MODE) && LogDebug(Format("`nisSoundDisabled: {1}, isGIF: {2}, isNoIntegration: {3}`n", isSoundDisable, GIF, NoIntegr))
 
 ;------------------------------------------------------------------------------------------------------
 
@@ -579,17 +579,21 @@ ManageOverlay(index, state := -1) {
 
 	try {
 		if index == 0 {
-			if AutoSSanimation[1] == "OFF"
+			if AutoSSanimation[1] == "OFF" {
+				(DEBUG_MODE) && LogDebug("AutoSSanimation is Disabled. Завершение ManageOverlay(0)")
 				return
+			}
 
 			if (state != -1 && isAutoSSAnimated == !!state)
                 return
 
 			if (isAutoSSAnimated) {
+				(DEBUG_MODE) && LogDebug("СТАТУС: Анимация автососок уже проигрывается. Остановка.")
 				for idx, value in AutoSSanimation {
 					ClearOverlay(idx + 200)
 				}
 				isAutoSSAnimated := false
+				(DEBUG_MODE) && LogDebug("СТАТУС: isAutoSSAnimated = " isAutoSSAnimated)
 				return
 			} else {
 				lastHwnd := 0
@@ -598,10 +602,12 @@ ManageOverlay(index, state := -1) {
 						ovlHwnd := ImageShow(A_ScriptDir "\resources\Overlays\toggle" ext,, [aIconsData[value].x, aIconsData[value].y + 43], 0x40000000 | 0x10000000 | 0x8000000,, CustomPanel.hwnd, true)
 					else
 						ovlHwnd := ImageShow(A_ScriptDir "\resources\Overlays\toggle" ext,, [aIconsData[value].x + 43 - (2 * ShiftX), aIconsData[value].y], 0x40000000 | 0x10000000 | 0x8000000,, CustomPanel.hwnd, true)
+					(DEBUG_MODE) && LogDebug(Format("Создан Оверлей [HWND: 0x{:X}]", ovlHwnd))
 					mOverlays[idx + 200] := ovlHwnd
 					lastHwnd := ovlHwnd
 				}
 				isAutoSSAnimated := true
+				(DEBUG_MODE) && LogDebug("СТАТУС: isAutoSSAnimated = " isAutoSSAnimated)
 				return lastHwnd
 			}
 		}
@@ -638,12 +644,18 @@ ManageOverlay(index, state := -1) {
         if aIconsData[index].duration > 0 {
             if !InStr(aIconsData[index].overlay, "flash" ext) {
 				(DEBUG_MODE) && LogDebug("ИНФО: Оверлей не flash.")
-				tFinish := () => (LogDebug("Сработал таймер на FinishOverlay(" index ")"), FinishOverlay(index))
+				tFinish := () => (
+					(DEBUG_MODE) && LogDebug("Сработал таймер на FinishOverlay(" index ")"),
+					FinishOverlay(index)
+				)
                 mTimers[index + 100] := tFinish
                 SetTimer(tFinish, -(aIconsData[index].duration - 350))
 				(DEBUG_MODE) && LogDebug("FinishOverlay будет запущен по mTimers[" (index + 100) "] через " (aIconsData[index].duration - 350) "  мс")
             }
-            tClear := () => (LogDebug("Сработал таймер на ClearOverlay(" index ")"), ClearOverlay(index))
+            tClear := () => (
+				(DEBUG_MODE) && LogDebug("Сработал таймер на ClearOverlay(" index ")"),
+				ClearOverlay(index)
+			)
             mTimers[index] := tClear
             SetTimer(tClear, -aIconsData[index].duration)
 			(DEBUG_MODE) && LogDebug("ClearOverlay будет запущен по mTimers[" index "] через " aIconsData[index].duration "  мс")
