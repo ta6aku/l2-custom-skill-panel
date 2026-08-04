@@ -2,12 +2,13 @@
 #SingleInstance Force
 
 global MainScriptName := "CustomSkillPanel.ahk"
-global L2Class := "ahk_class L2UnrealWWindowsViewportWindow"
+global L2Class := "ahk_class (?i)^L2UnrealWWindowsViewportWindow$"
 
 TraySetIcon(A_ScriptDir "\resources\StarterIco.ico", 1)
 A_IconTip := "Starter for L2_Skill_Panel"
 
-SetTitleMatchMode 2
+; Режим поиска окон RegEx для случая использования сторонних лоунчеров, которые меняют имя класса окна (например ZZapuskatr.exe меняет L2UnrealWWindowsViewportWindow (заглавную L) на l2UnrealWWindowsViewportWindow)
+SetTitleMatchMode "RegEx"
 DetectHiddenWindows(True)
 
 SetTimer(MonitorGameExit, 3000)
@@ -44,8 +45,9 @@ MonitorGameExit() {
 }
 
 KillPanel() {
-    if WinExist(MainScriptName " ahk_class AutoHotkey") {
-        PostMessage(0x0012, 0, 0,, MainScriptName " ahk_class AutoHotkey")
-        WinWaitClose(MainScriptName " ahk_class AutoHotkey", , 1)
+    ; Так как глобально включен RegEx, экранируем точку через \ и ищем скрытый класс AutoHotkey без учета регистра
+    if WinExist("CustomSkillPanel\.ahk ahk_class (?i)^AutoHotkey$") {
+        PostMessage(0x0012, 0, 0,, "CustomSkillPanel\.ahk ahk_class (?i)^AutoHotkey$")
+        WinWaitClose("CustomSkillPanel\.ahk ahk_class (?i)^AutoHotkey$", , 1)
     }
 }
