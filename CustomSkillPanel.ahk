@@ -300,11 +300,20 @@ global hCustomCursor := DllCall("LoadCursorFromFile", "Str", A_ScriptDir "\resou
 TraySetIcon(A_ScriptDir "\resources\tray.ico", 1)
 A_IconTip := "L2 Custom Skill Panel"
 
-global L2Hwnd := WinExist("ahk_class L2UnrealWWindowsViewportWindow")
+; Режимы поиска окон: 1 — заголовок окна должен начинаться со строки поиска. 2 — строка поиска может находиться в любом месте заголовка. 3 — заголовок окна должен точно совпадать со строкой поиска.
+; RegEx - для случая использования сторонних лоунчеров, которые меняют имя класса окна (например ZZapuskatr.exe меняет L2UnrealWWindowsViewportWindow заглавную L на l2UnrealWWindowsViewportWindow)
+SetTitleMatchMode "RegEx"
+
+; (?i) - Без учета регистра. ^ и $ - совпадапение строго от начала до конца
+global L2Hwnd := WinExist("ahk_class (?i)^L2UnrealWWindowsViewportWindow$")
+(DEBUG_MODE) && LogDebug(Format("`nWindow Handle: 0x{:08X}`n", L2Hwnd))
+SetTitleMatchMode 2
 
 if L2Hwnd {
 	if !NoIntegr {
-		DllCall("SetParent", "ptr", CustomPanel.HWND, "ptr", L2Hwnd)
+		result := DllCall("SetParent", "ptr", CustomPanel.HWND, "ptr", L2Hwnd)
+		(DEBUG_MODE) && LogDebug(Format("Результат SetParent: {1} | {2}`n", result, A_LastError))
+
 		WinGetPos(&WinX, &WinY, , , L2Hwnd)
         PanelPosX += WinX
         PanelPosY += WinY
@@ -367,7 +376,7 @@ IsReady := true
 
 
 
-#HotIf IsReady and MouseIsOverIcon() and WinActive("Lineage II")
+#HotIf IsReady and MouseIsOverIcon() and WinActive("ahk_id " . L2Hwnd)
 *LButton:: {
     BlockInput "MouseMove"
     try {
@@ -399,7 +408,7 @@ IsReady := true
 #HotIf
 
 
-#HotIf IsReady and MouseIsOverIcon() and WinActive("Lineage II")
+#HotIf IsReady and MouseIsOverIcon() and WinActive("ahk_id " . L2Hwnd)
 RButton:: {
     global mTimers, mIsAnimating
 
@@ -429,9 +438,9 @@ RButton:: {
 ;------------------------------------------------------------------------------------------------------
 if (HotKeyMap.Length > 0) {
 	if (NeedsCapsLock)
-		HkConditions := (*) => GetKeyState("CapsLock", "T") && WinActive("Lineage II")
+		HkConditions := (*) => GetKeyState("CapsLock", "T") && WinActive("ahk_id " . L2Hwnd)
 	else
-		HkConditions := (*) => WinActive("Lineage II")
+		HkConditions := (*) => WinActive("ahk_id " . L2Hwnd)
 
 	HotIf(HkConditions)
 
